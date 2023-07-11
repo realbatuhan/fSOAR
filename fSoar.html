@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>fSoar</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1 class="logo">⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ƒSøar⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿</h1>
+    <div>
+        <label for="incident-id">Incident ID:</label>
+        <input type="text" id="incident-id">
+        <button onclick="getIncident()">Get Incident</button>
+        <span id="validation-status"></span>
+    </div>
+    <div>
+        <label for="action">Action:</label>
+        <select id="action">
+            <option value="false-positive">False Positive</option>
+            <option value="true-positive">True Positive</option>
+            <option value="non-issue">Non-Issue</option>
+            <option value="inactive">Inactive</option>
+            <option value="waiting-for-response">Waiting for Response</option>
+        </select>
+        <button onclick="addAction()">Add Action</button>
+    </div>
+    <div>
+        <label for="note">Note:</label>
+        <input type="text" id="note">
+        <button onclick="addNote()">Add Note</button>
+    </div>
+    <div id="response-message"></div>
+
+    <h2>Incident Alerts</h2>
+    <table id="incident-table">
+        <thead>
+            <tr>
+                <th>QRadar ID</th>
+                <th>Date Created</th>
+                <th>Incident Name</th>
+                <th>SLA Duration</th>
+                <th>Taken Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        function getIncident() {
+            var incidentId = $("#incident-id").val();
+
+            // Make an AJAX request to validate the incident ID on the backend
+            // Update the validation status message based on the response
+            // Optionally, retrieve and populate the incident details if the ID is valid
+        }
+
+        function addAction() {
+            var action = $("#action").val();
+            var selectedRow = $(this).closest("tr");
+            var incidentId = selectedRow.data("incident-id");
+
+            var data = {
+                action: action,
+                incidentId: incidentId
+            };
+
+            $.ajax({
+                url: "/add_action",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function(response) {
+                    showResponseMessage(response.message, 'success');
+                    selectedRow.find(".actions").append("<li>" + action + "</li>");
+                },
+                error: function() {
+                    showResponseMessage('An error occurred.', 'error');
+                }
+            });
+        }
+
+        function addNote() {
+            var note = $("#note").val();
+            var selectedRow = $(this).closest("tr");
+            var incidentId = selectedRow.data("incident-id");
+
+            var data = {
+                note: note,
+                incidentId: incidentId
+            };
+
+            $.ajax({
+                url: "/add_note",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function(response) {
+                    showResponseMessage(response.message, 'success');
+                },
+                error: function() {
+                    showResponseMessage('An error occurred.', 'error');
+                }
+            });
+        }
+
+        function showResponseMessage(message, type) {
+            var responseMessage = $("#response-message");
+            responseMessage.text(message);
+            responseMessage.removeClass();
+            responseMessage.addClass(type);
+        }
+
+        function addIncidentToTable(incident) {
+            var incidentTable = $("#incident-table");
+            var newRow = "<tr data-incident-id='" + incident.id + "'>" +
+                "<td>" + incident.id + "</td>" +
+                "<td>" + incident.timestamp + "</td>" +
+                "<td>" + incident.type + "</td>" +
+                "<td>" + incident.sla + "</td>" +
+                "<td class='actions'></td>" +
+                "</tr>";
+            incidentTable.find("tbody").append(newRow);
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+        }
+
+        .logo {
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            font-size: 48px;
+            margin-top: 50px;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input,
+        select {
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 10px;
+            background-color: #fff;
+            color: #222;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 5px;
+            text-align: left;
+            border-bottom: 1px solid #fff;
+        }
+
+        #validation-status {
+            margin-left: 10px;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</body>
+</html>
