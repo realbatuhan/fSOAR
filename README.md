@@ -11,7 +11,7 @@ $Flask-SQLAlchemy==3.1.1
 $Flask-Migrate==3.1.0
 $Jinja2==3.0.1
 
-can install al needed requirements by using the requirements.txt
+Can install all needed requirements by using the requirements.txt
 
 Screenshot of interface:
 
