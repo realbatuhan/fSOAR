@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 import sqlite3
+import threading
+import time
 
-app = Flask(__name__)
+app = Flask(__fSoar__)
 DATABASE = 'fsoar.db'
 
 def get_db_connection():
@@ -46,114 +48,75 @@ def initialize_database():
 
 # QRadar API req. 
 def send_qradar_request(data):
-    
+    # Implementation for sending a request to QRadar API
+    pass
+
+def sync_with_qradar():
+    while True:
+        # Fetch new incidents from QRadar
+        new_incidents = fetch_new_incidents_from_qradar()
+
+        # Process new incidents and send them to the frontend
+        for incident in new_incidents:
+            # Save incident to the database
+            save_incident_to_database(incident)
+
+            # Send incident to frontend
+            send_incident_to_frontend(incident)
+
+        # Wait for 2 seconds before the next synchronization
+        time.sleep(2)
+
+def fetch_new_incidents_from_qradar():
+    # Implementation for fetching new incidents from QRadar API
+    # You can replace this with your actual implementation
+    return []
+
+def save_incident_to_database(incident):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Database save function
+    sql = "INSERT INTO incidents (timestamp, type, message) VALUES (?, ?, ?)"
+    values = (incident['timestamp'], incident['type'], incident['message'])
+    cursor.execute(sql, values)
+    incident_id = cursor.lastrowid
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    # Send incident to QRadar
+    send_qradar_request(incident)
+
+def send_incident_to_frontend(incident):
+    # Implementation for sending incident data to the frontend
     pass
 
 @app.before_first_request
 def initialize_app():
     initialize_database()
+    # Start the synchronization thread
+    sync_thread = threading.Thread(target=sync_with_qradar)
+    sync_thread.start()
 
 @app.route('/incident', methods=['POST'])
 def handle_incident():
-    incident = request.json
-
-    if incident['type'] == 'alert':
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Database save function
-        sql = "INSERT INTO incidents (timestamp, type, message) VALUES (?, ?, ?)"
-        values = (incident['timestamp'], incident['type'], incident['message'])
-        cursor.execute(sql, values)
-        incident_id = cursor.lastrowid
-        conn.commit()
-
-        cursor.close()
-        conn.close()
-
-        response = {
-            'status': 'success',
-            'message': 'Alert fired ',
-            'incident': {
-                'id': incident_id,
-                'timestamp': incident['timestamp'],
-                'type': incident['type'],
-                'message': incident['message']
-            }
-        }
-        send_qradar_request(response)
-
-        # Incident report
-        send_notification(incident)
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        sql = "INSERT INTO logs (timestamp, incident_type, message) VALUES (?, ?, ?)"
-        values = (incident['timestamp'], incident['type'], 'Alert alındı ve işlendi.')
-        cursor.execute(sql, values)
-        conn.commit()
-
-        cursor.close()
-        conn.close()
-
-        return jsonify(response), 200
-    else:
-        response = {
-            'status': 'error',
-            'message': 'Geçersiz olay türü.'
-        }
-        return jsonify(response), 400
+    # Your existing code for handling incidents
+    pass
 
 @app.route('/add_action', methods=['POST'])
 def add_action():
-    data = request.json
-    action = data['action']
-    incident_id = data['incidentId']
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Saving the action to database
-    sql = "INSERT INTO actions (incident_id, action) VALUES (?, ?)"
-    values = (incident_id, action)
-    cursor.execute(sql, values)
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    response = {
-        'status': 'success',
-        'message': 'Aksiyon başarıyla eklendi.'
-    }
-    return jsonify(response), 200
-
+    # Your existing code for adding actions
+    pass
 
 @app.route('/add_note', methods=['POST'])
 def add_note():
-    data = request.json
-    note = data['note']
-    incident_id = data['incidentId']
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Saving the incident note to database
-    sql = "INSERT INTO notes (incident_id, note) VALUES (?, ?)"
-    values = (incident_id, note)
-    cursor.execute(sql, values)
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    response = {
-        'status': 'success',
-        'message': 'Not başarıyla eklendi.'
-    }
-    return jsonify(response), 200
+    # Your existing code for adding notes
+    pass
 
 def send_notification(incident):
+    # Your existing code for sending notifications
     pass
 
 if __name__ == '__main__':
