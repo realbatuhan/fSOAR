@@ -1,0 +1,34 @@
+import sqlite3
+
+
+def connect_to_database():
+    conn = sqlite3.connect('fsoar.db')  # database name can be change from here
+    return conn
+
+
+def save_incident_to_database(incident):
+    conn = connect_to_database()
+    cursor = conn.cursor()
+
+    
+    sql = "INSERT INTO incidents (timestamp, type, message) VALUES (?, ?, ?)"
+    values = (incident['timestamp'], incident['type'], incident['message'])
+    cursor.execute(sql, values)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def save_log_entry(log_entry):
+    conn = connect_to_database()
+    cursor = conn.cursor()
+
+  
+    sql = "INSERT INTO logs (timestamp, incident_type, message) VALUES (?, ?, ?)"
+    values = (log_entry['timestamp'], log_entry['incident_type'], log_entry['message'])
+    cursor.execute(sql, values)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
